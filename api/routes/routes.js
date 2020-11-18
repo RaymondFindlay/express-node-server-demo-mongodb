@@ -9,18 +9,22 @@ router.get('/', (req, res) => {
     Task.find()
         .then(tasks => res.status(200).json(tasks))
         .catch(e => res.status(500).json({
-            mongoErr: e,
-            errorMessage: "Internal server error"
+            mongoErr: e
         }));        
 });
 
 // GET
 router.get('/:id', (req, res) => {
     Task.findById(req.params.id)
-        .then(task => res.status(200).json(task))
-        .catch(e => res.status(404).json({
-            mongoErr: e,
-            errorMessage: "Task item not found"
+        .then(task => {
+            task !== null
+                ? res.status(200).json(task)
+                : res.status(404).json({
+                    errorMessage: "Task not found"
+                });
+        })
+        .catch(e => res.status(500).json({
+            mongoErr: e
         }));
 });
 
@@ -35,8 +39,7 @@ router.post('/', (req, res) => {
         .save()
         .then(todo => res.status(201).json(todo))
         .catch(e => res.status(400).json({
-            mongoErr: e,
-            errorMessage: "Bad request"
+            mongoErr: e
         }));    
 });
 
@@ -49,19 +52,23 @@ router.put('/:id', (req, res) => {
 
     Task.findById(req.params.id)
         .then(task => {
-            task.description = description;
-            task.isComplete = isComplete;
-
-            task.save()
-                .then(updatedTask => res.status(200).json(updatedTask))
-                .catch(e => res.status(400).json({          
-                    mongoErr: e,
-                    errorMessage: "Bad request"
-                }));
+            if(task !== null) {
+                task.description = description;
+                task.isComplete = isComplete;
+    
+                task.save()
+                    .then(updatedTask => res.status(200).json(updatedTask))
+                    .catch(e => res.status(400).json({          
+                        mongoErr: e
+                    }));
+            } else {
+                res.status(404).json({
+                    errorMessage: "Task not found"
+                });
+            }
         })
-        .catch(e => res.status(404).json({
-            mongoErr: e,
-            errorMessage: "Task not found"
+        .catch(e => res.status(500).json({
+            mongoErr: e
         }));
 });
 
@@ -69,15 +76,20 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
     Task.findById(req.params.id)
         .then(task => {
-            task.remove()
-                .then(() => res.status(200).json({
-                    deleted: true,
-                    task
-                }));
+            if(task !== null) {
+                task.remove()
+                    .then(() => res.status(200).json({
+                        deleted: true,
+                        task
+                    }));
+            } else {
+                res.status(404).json({
+                    errorMessage: "Task not found"
+                });
+            }
         })
-        .catch(e => res.status(404).json({
-            mongoErr: e,
-            errorMessage: "Task not found"
+        .catch(e => res.status(500).json({
+            mongoErr: e
         }));
 });
 
