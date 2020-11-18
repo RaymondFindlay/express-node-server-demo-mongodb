@@ -37,7 +37,7 @@ router.post('/', (req, res) => {
 
     newTask
         .save()
-        .then(todo => res.status(201).json(todo))
+        .then(task => res.status(201).json(task))
         .catch(e => res.status(400).json({
             mongoErr: e
         }));    
